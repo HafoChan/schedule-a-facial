@@ -56,6 +56,15 @@ const Home = () => {
             Doctor Detail
           </Button>
         </MuiLink>
+        <MuiLink  
+          component={Link}
+          to = "/createDoctor"
+          style={{ textDecoration: "none" }}
+        >
+          <Button variant="contained" color="success">
+            Create Doctor
+          </Button>
+        </MuiLink>
       </Box>
     </Box>
   );

@@ -7,41 +7,18 @@ import {
   TextField,
   Grid2,
 } from "@mui/material";
+import { useLocation } from "react-router-dom";
 
 const DoctorDetail = () => {
+  const location = useLocation()
+  const doctor = location.state?.doctor
   const today = new Date();
   const maxDate = new Date();
   maxDate.setDate(today.getDate() + 7);
-
+  const description = doctor.description.split(',')
   const [selectedDate, setSelectedDate] = useState(
     today.toISOString().split("T")[0]
   );
-
-  const doctor = {
-    name: "Phó Giáo sư, Tiến sĩ Phạm Văn Tân",
-    experience: [
-      "Nguyên Trưởng khoa Khám bệnh và Điều trị ngoại trú, Bệnh viện Mắt Trung ương",
-      "Trưởng Phòng khám chuyên khoa Mắt Dr.Tân",
-      "Đạt danh hiệu Bác sĩ Cao cấp",
-      "20 năm kinh nghiệm khám và điều trị các bệnh về mắt",
-    ],
-    location:
-      "Phòng khám Chuyên khoa Mắt Dr.Tân, Số nhà 5 ngõ 192 Lê Trọng Tấn, Khương Mai, Thanh Xuân, Hà Nội",
-    price: "500.000đ - 600.000đ",
-    availableTimes: [
-      "08:00 - 08:30",
-      "09:00 - 09:30",
-      "09:30 - 10:00",
-      "10:00 - 10:30",
-      "10:30 - 11:00",
-      "14:00 - 14:30",
-      "14:30 - 15:00",
-      "15:00 - 15:30",
-      "15:30 - 16:00",
-      "16:00 - 16:30",
-      "16:30 - 17:00",
-    ],
-  };
 
   return (
     <Box padding={3} maxWidth="1000px" margin="auto">
@@ -53,7 +30,7 @@ const DoctorDetail = () => {
       >
         <img
           src="https://hthaostudio.com/wp-content/uploads/2022/03/Anh-bac-si-nam-7-min.jpg.webp" // Thay đổi đường dẫn hình ảnh ở đây
-          alt={doctor.name}
+          alt={doctor}
           style={{
             width: "180px",
             height: "180px",
@@ -63,11 +40,11 @@ const DoctorDetail = () => {
           }}
         />
         <Box width={"75%"}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h3" gutterBottom>
             {doctor.name}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            {doctor.experience.join(", ")}
+            {doctor.experience}
           </Typography>
           <Typography variant="body2" gutterBottom>
             Địa chỉ: {doctor.location}
@@ -99,7 +76,7 @@ const DoctorDetail = () => {
         </Box>
       </Box>
 
-      <Grid2 container spacing={2}>
+      {/* <Grid2 container spacing={2}>
         {doctor.availableTimes.map((time, index) => (
           <Box item xs={6} sm={4} key={index}>
             <Button variant="outlined" fullWidth>
@@ -107,21 +84,14 @@ const DoctorDetail = () => {
             </Button>
           </Box>
         ))}
-      </Grid2>
+      </Grid2> */}
 
       <Paper elevation={3} style={{ marginTop: "20px", padding: "15px" }}>
         <Typography variant="h6">Thông tin thêm</Typography>
-        // Phần này sẽ là description
         <Typography variant="body2">
           Quá trình công tác:
           <ul>
-            <li>Bác sĩ tại Phòng khám Chuyên khoa Mắt Dr.Tân (2012 - nay)</li>
-            <li>Bác sĩ tại Bệnh viện Mắt Trung ương (2004 - 2018)</li>
-            <li>
-              Bác sĩ phụ trách khoa Khám bệnh và điều trị ngoại trú, Bệnh viện
-              Mắt Trung ương (2002 - 2003)
-            </li>
-            <li>Giáo viên Y Khoa, Đại học Y Thái Bình (1981 - 1991)</li>
+           {description.map((item) => <li>{item}</li>)}
           </ul>
         </Typography>
       </Paper>
