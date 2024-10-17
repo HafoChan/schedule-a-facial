@@ -40,16 +40,16 @@ const Home = () => {
         </MuiLink>
         <MuiLink
           component={Link}
-          to="/booking"
+          to="/doctor"
           style={{ textDecoration: "none" }}
         >
           <Button variant="contained" color="success">
-            Booking
+            Doctor All
           </Button>
         </MuiLink>
         <MuiLink
           component={Link}
-          to="/doctor"
+          to="/doctorDetail"
           style={{ textDecoration: "none" }}
         >
           <Button variant="contained" color="success">

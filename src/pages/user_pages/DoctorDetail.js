@@ -15,7 +15,7 @@ const DoctorDetail = () => {
   const today = new Date();
   const maxDate = new Date();
   maxDate.setDate(today.getDate() + 7);
-  const description = doctor.description.split(',')
+  const description = doctor.description ? doctor.description.split(', ') : []
   const [selectedDate, setSelectedDate] = useState(
     today.toISOString().split("T")[0]
   );
@@ -36,7 +36,7 @@ const DoctorDetail = () => {
             height: "180px",
             borderRadius: "50%",
             marginRight: "30px",
-            objectFit: "cover",
+            objectFit: "contain",
           }}
         />
         <Box width={"75%"}>
@@ -91,7 +91,14 @@ const DoctorDetail = () => {
         <Typography variant="body2">
           Quá trình công tác:
           <ul>
-           {description.map((item) => <li>{item}</li>)}
+           {description && description > 0 ?(
+            description.map((item) => <li>{item}</li>))
+            :(<>
+                <li>Chưa có mô tả</li>
+                <Button>Cập nhật ở dây "dành cho bác sĩ"</Button>
+              </>
+            )
+           }
           </ul>
         </Typography>
       </Paper>

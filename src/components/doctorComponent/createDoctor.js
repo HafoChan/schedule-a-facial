@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -10,59 +10,59 @@ import {
   Alert,
 } from "@mui/material";
 import doctorApi from "../../api/doctorApi";
+import doctorService from "../../service/doctorService/createDoctor";
+const CreateDoctor = () =>{
+    const [data,setData] = useState({})
+    const [doctor,setDoctor] = useState({
+        name: "",
+        email: "",
+        username: "",
+        password: "",
+        phone: "",
+        gender: ""})
+    const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const handleSubmit = (e) =>{
+        e.preventDefault()
+        const confirm = e.target.confirmpassword.value;
+        const valid = doctorService.validationPassword(confirm,doctor.password)
+        if (valid)
+        {
+            return setError(valid)
+    
+        }
+        setError("")
+        fetchData()
+    }
 
-const UpdateDoctor = ({ doctorId }) => {
-  const [doctor, setDoctor] = useState({
-    name: "",
-    email: "",
-    username: "",
-    password: "",
-    phone: "",
-    gender: "",
-  });
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+    const handleChange = (e) =>{
+        const name = e.target.name
+        const value = e.target.value
+        setDoctor(values => (
+            {...values,[name] : value}
+        ))
+    }
 
-  useEffect(() => {
-    // Fetch doctor data for the given ID
-    const fetchDoctorData = async () => {
-      try {
-        const response = await doctorApi.getDoctorById(doctorId);
-        setDoctor(response.result);
-      } catch (error) {
-        console.error("Failed to fetch doctor data:", error);
-      }
+    const handleCloseSnackbar = (event,reason) => {
+      if (reason === 'clickaway')
+        return;
+      setOpenSnackbar(false);
     };
 
-    fetchDoctorData();
-  }, [doctorId]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setDoctor((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Perform validation here if needed
-
-    try {
-      const response = await doctorApi.updateDoctor(doctorId, doctor);
-      setSuccessMessage("Cập nhật bác sĩ thành công!");
-      setOpenSnackbar(true);
-    } catch (error) {
-      setError("Đã xảy ra lỗi khi cập nhật bác sĩ.");
-      console.error("Update failed:", error);
-    }
-  };
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
-  return (
-    <Container maxWidth="sm">
+    const fetchData = async () =>{
+        try {
+            const result = await doctorApi.create(doctor)
+            setSuccessMessage("Lưu bác sĩ thành công!");
+            setOpenSnackbar(true);
+            setData(result)
+        } catch (error) {
+          setError("Đã xảy ra lỗi khi lưu bác sĩ.");
+          console.error("Create failed:", error);        }
+        }
+    
+    return(
+      <Container maxWidth="sm">
       <Typography variant="h4" gutterBottom align="center">
         Cập Nhật Thông Tin Bác Sĩ
       </Typography>
@@ -105,8 +105,16 @@ const UpdateDoctor = ({ doctorId }) => {
               label="Mật khẩu"
               name="password"
               type="password"
-              value={doctor.password}
+              value={doctor.confirmpassword}
               onChange={handleChange}
+            />
+          </Box>
+          <Box mb={2}>
+            <TextField
+              fullWidth
+              label="Xác nhận mật khẩu"
+              name="confirmpassword"
+              type="password"
             />
           </Box>
           <Box mb={2}>
@@ -140,7 +148,6 @@ const UpdateDoctor = ({ doctorId }) => {
         </Alert>
       </Snackbar>
     </Container>
-  );
-};
-
-export default UpdateDoctor;
+    )
+}
+export default CreateDoctor;
