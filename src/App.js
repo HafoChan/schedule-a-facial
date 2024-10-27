@@ -1,23 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/user_pages/Home";
-import Team from "./pages/user_pages/TeamOfExpert";
-import Register from "./pages/user_pages/Register";
-import Login from "./pages/user_pages/Login";
-import BookingPage from "./pages/user_pages/Booking";
-import DoctorDetail from "./pages/user_pages/DoctorDetail";
-import CreateDoctor from "./components/doctorComponent/createDoctor";
+import { publicRoutes } from "./route";
+
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/team" element={<Team />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/doctor" element={<BookingPage />} />
-        <Route path="/doctorDetail/*" element={<DoctorDetail />} />
-        <Route path="/createDoctor" element={<CreateDoctor/>}></Route>
+        {publicRoutes.map((route,index)=>{
+          const Page = route.component
+          return <Route key={index} path={route.path} element={<Page/>}/>
+        })}
       </Routes>
     </Router>
   );
