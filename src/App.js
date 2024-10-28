@@ -1,17 +1,12 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { publicRoutes } from "./route";
+import { Box } from '@mui/material';
+import AppRoutes from './routes';
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        {publicRoutes.map((route,index)=>{
-          const Page = route.component
-          return <Route key={index} path={route.path} element={<Page/>}/>
-        })}
-      </Routes>
-    </Router>
+    <Box sx={{ height: '100vh' }}>
+      <AppRoutes />
+    </Box>
   );
 };
 

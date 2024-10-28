@@ -1,10 +1,10 @@
 import axiosClient from "./axiosClient"
 const doctorApi = {
     create(data){
-        return axiosClient.post("v1/doctor/create",data)
+        return axiosClient.post("/doctor/create",data)
     },
     updateDoctor(id,data){
-        return axiosClient.put(`v1/doctor/${id}`,data)
+        return axiosClient.put(`/doctor/${id}`,data)
     },
 
     filterDoctor(province, name,district) {
@@ -18,7 +18,7 @@ const doctorApi = {
         .filter(Boolean)
         .join('&'); 
     
-        const endpoint = query ? `v1/doctor?${query}` : 'v1/doctor';
+        const endpoint = query ? `/doctor?${query}` : '/doctor';
         console.log(endpoint)
         return axiosClient.get(endpoint);
     },
