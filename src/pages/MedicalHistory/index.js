@@ -42,29 +42,6 @@ const MedicalHistory = () => {
     getData()
   },[])
 
-
-//   const medicalRecords = [
-//     {
-//       id: 1,
-//       name: 'Nguyễn Văn A',
-//       birthDate: '1990-05-15',
-//       examDate: '2024-03-15',
-//       subject: 'Khám da mặt định kỳ',
-//       email: 'nguyenvana@email.com',
-//       status: 'Đã khám'
-//     },
-//     {
-//       id: 2,
-//       name: 'Trần Thị B',
-//       birthDate: '1995-08-20',
-//       examDate: '2024-03-14',
-//       subject: 'Tư vấn điều trị mụn',
-//       email: 'tranthib@email.com',
-//       status: 'Chờ khám'
-//     },
-//   ];
-
-
   const handleSelect = (id) => {
     // Nếu id đã được chọn thì bỏ chọn
     if (selected.includes(id)) {
@@ -78,11 +55,38 @@ const MedicalHistory = () => {
   const handlePrescription = () => {
     if (selected.length === 1) {
       const record = medicalRecords.find(r => r.id === selected[0]);
-      navigate('/prescription', { state: { patientInfo: record } });
+      navigate('/prescription', { state: { appointment: record } });
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'PENDING':
+        return 'warning'; // Orange
+      case 'CONFIRMED':
+        return 'primary'; // Blue
+      case 'COMPLETE':
+        return 'success'; // Green
+      case 'CANCELED':
+        return 'error'; // Red
+      default:
+        return 'default';
+    }
+  };
 
+  const getNextStatus = (currentStatus) => {
+    const statuses = ['PENDING', 'CONFIRMED', 'COMPLETE', 'CANCELED'];
+    const currentIndex = statuses.indexOf(currentStatus);
+    return statuses[(currentIndex + 1) % statuses.length];
+  };
+
+  const handleStatusChange = (id, newStatus) => {
+    setMedicalRecords((prevRecords) =>
+      prevRecords.map((record) =>
+        record.id === id ? { ...record, status: newStatus } : record
+      )
+    );
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -136,8 +140,6 @@ const MedicalHistory = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell padding="checkbox">
-              </TableCell>
               <TableCell>Họ và tên</TableCell>
               <TableCell>Ngày sinh</TableCell>
               <TableCell>Ngày khám</TableCell>
@@ -152,14 +154,12 @@ const MedicalHistory = () => {
                 key={record.id}
                 hover
                 selected={selected.indexOf(record.id) !== -1}
-                sx={{ '&:hover': { cursor: 'pointer' } }}
+                onClick={() => handleSelect(record.id)}
+                sx={{ 
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: '#f5f5f5' }
+                }}
               >
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selected.indexOf(record.id) !== -1}
-                    onChange={() => handleSelect(record.id)}
-                  />
-                </TableCell>
                 <TableCell>{record.name}</TableCell>
                 <TableCell>{(record.dob)}</TableCell>
                 <TableCell>{(record.start)}</TableCell>
@@ -168,8 +168,12 @@ const MedicalHistory = () => {
                 <TableCell>
                   <Chip 
                     label={record.status}
-                    color={record.status === 'CONFIRMED' ? 'success' : 'warning'}
+                    color={getStatusColor(record.status)}
                     size="small"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Ngăn sự kiện click lan ra TableRow
+                      handleStatusChange(record.id, getNextStatus(record.status));
+                    }}
                   />
                 </TableCell>
               </TableRow>

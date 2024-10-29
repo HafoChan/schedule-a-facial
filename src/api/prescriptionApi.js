@@ -14,6 +14,12 @@ const prescriptionApi = {
     },
     createPrescription(id, data){
         return axiosClient.put(`/prescription/${id}`, data)
+    },
+    updateStatus(id, data){
+        return axiosClient.put(`/appointment/${id}`, data)
+    },
+    updateMedicine(id, data){
+        return axiosClient.put(`/medicine/${id}`, data)
     }
 }
 export default prescriptionApi

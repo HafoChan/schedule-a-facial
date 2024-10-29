@@ -28,21 +28,21 @@ const Prescription = () => {
   const [patientInfo, setPatientInfo] = useState({});
   const [appointment, setAppointment] = useState({});
   const [prescriptionList, setPrescriptionList] = useState([]);
+  const [editIndex, setEditIndex] = useState(null); // New state to track the index of the medicine being edited
+
   // Thêm state mới cho kết quả khám
   const [result, setResult] = useState('');
 
   useEffect(() => {
     const getInfoPatient = async () => {
       try {
-        if (location.state?.patientInfo?.idPatient) {
-          const response = await prescriptionApi.getInfoPatient(location.state.patientInfo.idPatient);
-          const listmedicine = await prescriptionApi.getListMedicine(location.state.patientInfo.prescriptionId)
-          console.log(listmedicine)
+        if (location.state?.appointment?.idPatient) {
+          const response = await prescriptionApi.getInfoPatient(location.state.appointment.idPatient);
+          console.log(location.state.appointment)
+          const listmedicine = await prescriptionApi.getListMedicine(location.state.appointment.prescriptionId)
           setPrescriptionList(listmedicine.result)
-          console.log('API Response:', response.result);
-          console.log(location.state.patientInfo)
           setPatientInfo(response.result);
-          setAppointment(location.state.patientInfo)
+          setAppointment(location.state.appointment)
         }
       } catch (error) {
         console.error('Error fetching patient info:', error);
@@ -53,7 +53,7 @@ const Prescription = () => {
 
   const [medicine, setMedicine] = useState({
     name: '',
-    medicine_type: 'Tuýt',
+    medicineType: '',
     instruction: '',
     quantity: '',
     note: '',
@@ -67,31 +67,74 @@ const Prescription = () => {
   };
 
   const handleMedicineChange = (e) => {
-    setMedicine({
-      ...medicine,
+    setMedicine((prevMedicine) => ({
+      ...prevMedicine,
       [e.target.name]: e.target.value,
-    });
+    }));
+  };
+
+
+  const handleMedicineSelect = (index) => {
+    setEditIndex(index);
+    setMedicine(prescriptionList[index]);
   };
 
   const handleAddMedicine = async () => {
-    const data = await prescriptionApi.createMedicine(appointment.prescriptionId, medicine)
-    console.log(data.result)
-    setPrescriptionList([
-      ...prescriptionList,
-      { ...data.result},
-    ]);
+    if (editIndex !== null) {
+      const updatedList = [...prescriptionList];
+      updatedList[editIndex] = medicine;
+      await prescriptionApi.updateMedicine(prescriptionList[editIndex].id, medicine)
+      setPrescriptionList(updatedList);
+      setEditIndex(null);
+    } else {
+      // Add new medicine
+      const data = await prescriptionApi.createMedicine(appointment.prescriptionId, medicine);
+      setPrescriptionList([
+        ...prescriptionList,
+        { ...data.result },
+      ]);
+    }
     setMedicine({
       name: '',
-      medicine_type: 'Tuýt',
+      medicineType: 'tuýp',
       instruction: '',
       quantity: '',
       note: '',
     });
   };
 
-  const handleExport = () => {
-    // Handle PDF export
-    console.log('Exporting to PDF...');
+  const handleExport = async () => {
+    try {
+      const response = await fetch("http://localhost:8082/api/v1/appointment/pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/pdf",  
+        },
+        body: JSON.stringify(appointment)
+      });
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", patientInfo.name + ".pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+
+      // Hiển thị thông báo thành công
+      setSnackbarMessage('Xuất PDF thành công!');
+      setOpenSnackbar(true);
+      
+      // Đợi 2 giây rồi chuyển hướng
+      setTimeout(() => {
+        navigate('/medical-history');
+      }, 2000);
+    } catch (error) {
+      setSnackbarMessage('Xuất PDF thất bại!');
+      setOpenSnackbar(true);
+    }
   };
 
   const handleSubmit = async () => {
@@ -99,17 +142,12 @@ const Prescription = () => {
       await prescriptionApi.createPrescription(appointment.prescriptionId, {
         result: result,
       });
-      
-      // Hiển thị thông báo thành công
+      setSnackbarMessage('Tạo đơn thuốc thành công!');
       setOpenSnackbar(true);
-      
-      // Đợi 2 giây rồi chuyển hướng
-      setTimeout(() => {
-        navigate('/medical-history');
-      }, 2000);
-      
     } catch (error) {
       console.error('Error creating prescription:', error);
+      setSnackbarMessage('Tạo đơn thuốc thất bại!');
+      setOpenSnackbar(true);
     }
   };
 
@@ -120,6 +158,7 @@ const Prescription = () => {
 
   // Thêm state cho thông báo
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   // Hàm đóng thông báo
   const handleCloseSnackbar = (event, reason) => {
@@ -215,13 +254,13 @@ const Prescription = () => {
             <Select
               fullWidth
               label="Dạng thuốc"
-              name="type"
-              value={medicine.medicine_type}
+              name="medicineType"
+              value={medicine.medicineType || ''}
               onChange={handleMedicineChange}
             >
-              <MenuItem value="Tuýt">Tuýt</MenuItem>
-              <MenuItem value="Viên">Viên</MenuItem>
-              <MenuItem value="Chai">Chai</MenuItem>
+              <MenuItem value="tuýp">Tuýp</MenuItem>
+              <MenuItem value="viên">Viên</MenuItem>
+              <MenuItem value="chai">Chai</MenuItem>
             </Select>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -254,7 +293,7 @@ const Prescription = () => {
           </Grid>
           <Grid item xs={12}>
             <Button variant="contained" color="primary" onClick={handleAddMedicine}>
-              Thêm thuốc
+              {editIndex !== null ? 'Cập nhật' : 'Thêm thuốc'}
             </Button>
           </Grid>
         </Grid>
@@ -274,10 +313,19 @@ const Prescription = () => {
             </TableHead>
             <TableBody>
               {prescriptionList.map((item, index) => (
-                <TableRow key={item.id}>
+                <TableRow 
+                  key={item.id} 
+                  onClick={() => handleMedicineSelect(index)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: '#f5f5f5'
+                    }
+                  }}
+                >
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.type}</TableCell>
+                  <TableCell>{item.medicineType}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.instruction}</TableCell>
                   <TableCell>{item.note}</TableCell>
@@ -307,7 +355,7 @@ const Prescription = () => {
           </Grid>
         </Grid>
 
-        {/* Thêm Snackbar để hiển thị thông báo */}
+        {/* Cập nhật Snackbar */}
         <Snackbar
           open={openSnackbar}
           autoHideDuration={2000}
@@ -320,7 +368,7 @@ const Prescription = () => {
             variant="filled"
             sx={{ width: '100%' }}
           >
-            Tạo đơn thuốc thành công!
+            {snackbarMessage}
           </Alert>
         </Snackbar>
       </Paper>
