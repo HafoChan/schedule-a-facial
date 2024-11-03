@@ -3,7 +3,8 @@ import Register from "../pages/Register";
 import Login from "../pages/Login";
 import BookingPage from "../pages/Doctor";
 import DoctorDetail from "../pages/DoctorDetail";
-import CreateDoctor from "../components/doctorComponent/createDoctor";
+import Prescription from "../pages/Prescription";
+
 const publicRoutes = [
         {path: "/", component : Home},
         {path: "/register", component : Register},
@@ -12,7 +13,7 @@ const publicRoutes = [
         {path: "/doctor/:provinceSlug/:districtSlug", component : BookingPage},
         {path: "/doctor/", component : BookingPage},
         {path: "/doctorDetail/*", component : DoctorDetail},
-        {path: "/createDoctor", component : CreateDoctor}
+        {path: "/prescription", component : Prescription}
 ]
 
 const privateRoutes = [
