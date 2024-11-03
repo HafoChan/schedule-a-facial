@@ -139,9 +139,10 @@ const Prescription = () => {
 
   const handleSubmit = async () => {
     try {
-      await prescriptionApi.createPrescription(appointment.prescriptionId, {
+      const response = await prescriptionApi.createPrescription(appointment.prescriptionId, {
         result: result,
       });
+      setResult(response.result.result)
       setSnackbarMessage('Tạo đơn thuốc thành công!');
       setOpenSnackbar(true);
     } catch (error) {
@@ -187,6 +188,7 @@ const Prescription = () => {
               name="name"
               value={patientInfo?.name || ''}
               onChange={handlePatientInfoChange}
+              disabled
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -196,6 +198,7 @@ const Prescription = () => {
               name="gender"
               value={patientInfo?.gender || ''}
               onChange={handlePatientInfoChange}
+              disabled
             >
               <MenuItem value="nam">Nam</MenuItem>
               <MenuItem value="nu">Nữ</MenuItem>
@@ -210,6 +213,7 @@ const Prescription = () => {
               value={patientInfo?.dob || ''}
               onChange={handlePatientInfoChange}
               InputLabelProps={{ shrink: true }}
+              disabled
             />
           </Grid>
           <Grid item xs={12}>
@@ -219,6 +223,7 @@ const Prescription = () => {
               name="reason"
               value={appointment?.title || ''}
               onChange={handlePatientInfoChange}
+              disabled
             />
           </Grid>
 

@@ -88,6 +88,31 @@ const MedicalHistory = () => {
     );
   };
 
+  const handleDateFilter = async (e) => {
+    setDateFilter(e.target.value)
+    const today = new Date().toISOString().split('T')[0];
+    if(e.target.value === 'today'){
+      const newMedicalRecords = await prescriptionApi.filterAppointment(today)
+      console.log(today)
+      setMedicalRecords(newMedicalRecords.result)
+    }
+    else if(e.target.value === 'week'){
+      const newMedicalRecords = await prescriptionApi.filterAppointmentByTime(today,null)
+      console.log(today)
+      setMedicalRecords(newMedicalRecords.result)
+    }
+    else if(e.target.value === 'month'){
+      const newMedicalRecords = await prescriptionApi.filterAppointmentByTime(null,today)
+      console.log(today)
+      setMedicalRecords(newMedicalRecords.result)
+    }
+    else{
+      const list = await prescriptionApi.findAppointmentByDoctor()
+      console.log(list.result)
+      setMedicalRecords(list.result)
+    }
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ color: '#1976d2', fontWeight: 500 }}>
@@ -113,7 +138,7 @@ const MedicalHistory = () => {
         <Select
           size="small"
           value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
+          onChange={(e) => handleDateFilter(e)}
           sx={{ width: 150 }}
         >
           <MenuItem value="all">Tất cả ngày</MenuItem>
@@ -129,7 +154,6 @@ const MedicalHistory = () => {
             variant="contained"
             startIcon={<MedicalServicesIcon />}
             onClick={handlePrescription}
-            disabled={selected.length !== 1}
           >
             Kê đơn thuốc
           </Button>
