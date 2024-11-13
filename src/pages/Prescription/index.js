@@ -18,6 +18,8 @@ import {
   Grid,
   Snackbar,
   Alert,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 
 const Prescription = () => {
@@ -31,7 +33,6 @@ const Prescription = () => {
   const [editIndex, setEditIndex] = useState(null); // New state to track the index of the medicine being edited
 
   // Thêm state mới cho kết quả khám
-  const [result, setResult] = useState('');
 
   useEffect(() => {
     const getInfoPatient = async () => {
@@ -103,58 +104,66 @@ const Prescription = () => {
     });
   };
 
-  const handleExport = async () => {
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [openPdf, setOpenPdf] = useState(false);
+
+  const handleExport = async (e) => {
     try {
-      const response = await fetch("http://localhost:8082/api/v1/appointment/pdf", {
+      console.log(appointment.result)
+      const prescription = await prescriptionApi.createPrescription(appointment.prescriptionId, {
+        result: appointment?.result,
+      });
+      setAppointment((appointment)=>({...appointment,[e.target.name] : prescription.result.result}))
+      const response = await fetch(`http://localhost:8082/api/v1/appointment/pdf?status=${e.target.textContent}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/pdf",  
         },
-        body: JSON.stringify(appointment)
+        body: JSON.stringify(appointment),
       });
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", patientInfo.name + ".pdf");
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+      if (e.target.textContent === "Gửi")
+      {
+        setSnackbarMessage('Gửi đơn thuốc thành công!');
+        setOpenSnackbar(true);
+        setTimeout(() => {
+          navigate('/medical-history');
+        }, 1000);
+      }
+      else
+      {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/pdf")) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          setPdfUrl(url); // Set the PDF URL
+          setOpenPdf(true); // Open the PDF modal
+        } else {
+          throw new Error("Không nhận được file PDF từ server");
+        }
+        setSnackbarMessage('Tạo PDF thành công!');
+        setOpenSnackbar(true);
+      }
+  
 
-      // Hiển thị thông báo thành công
-      setSnackbarMessage('Xuất PDF thành công!');
-      setOpenSnackbar(true);
-      
-      // Đợi 2 giây rồi chuyển hướng
-      setTimeout(() => {
-        navigate('/medical-history');
-      }, 2000);
+     
     } catch (error) {
-      setSnackbarMessage('Xuất PDF thất bại!');
+      setSnackbarMessage('Tạo PDF thất bại!');
       setOpenSnackbar(true);
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const response = await prescriptionApi.createPrescription(appointment.prescriptionId, {
-        result: result,
-      });
-      setResult(response.result.result)
-      setSnackbarMessage('Tạo đơn thuốc thành công!');
-      setOpenSnackbar(true);
-    } catch (error) {
-      console.error('Error creating prescription:', error);
-      setSnackbarMessage('Tạo đơn thuốc thất bại!');
-      setOpenSnackbar(true);
-    }
+  const handleClosePdf = () => {
+    setOpenPdf(false);
+    setPdfUrl('');
   };
+
 
   // Thêm handler cho kết quả khám
   const handleResultChange = (e) => {
-    setResult(e.target.value);
+    setAppointment((appointment) => ({
+      ...appointment,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   // Thêm state cho thông báo
@@ -234,7 +243,8 @@ const Prescription = () => {
               multiline
               rows={4}
               label="Kết quả khám"
-              value={result}
+              name="result"
+              value={appointment?.result || ''}
               onChange={handleResultChange}
               placeholder="Nhập kết quả khám..."
             />
@@ -344,16 +354,16 @@ const Prescription = () => {
         <Grid container spacing={2} sx={{ mt: 4 }} justifyContent="flex-end">
           <Grid item>
             <Button variant="contained" color="primary" onClick={handleExport}>
-              Xuất PDF
+              Xem PDF
             </Button>
           </Grid>
           <Grid item>
             <Button 
               variant="contained" 
               color="primary" 
-              onClick={handleSubmit}
+              onClick={handleExport}
               // Disable nút Gửi nếu chưa có kết quả khám
-              disabled={!result.trim()}
+              disabled={!appointment?.result}
             >
               Gửi
             </Button>
@@ -376,6 +386,18 @@ const Prescription = () => {
             {snackbarMessage}
           </Alert>
         </Snackbar>
+
+        {/* PDF Modal */}
+        <Dialog open={openPdf} onClose={handleClosePdf} fullWidth maxWidth="md">
+          <DialogContent>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="600px"
+              title="Prescription PDF"
+            />
+          </DialogContent>
+        </Dialog>
       </Paper>
     </Container>
   );

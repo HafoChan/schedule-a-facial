@@ -65,7 +65,7 @@ const MedicalHistory = () => {
         return 'warning'; // Orange
       case 'CONFIRMED':
         return 'primary'; // Blue
-      case 'COMPLETE':
+      case 'COMPLETED':
         return 'success'; // Green
       case 'CANCELED':
         return 'error'; // Red
@@ -75,7 +75,7 @@ const MedicalHistory = () => {
   };
 
   const getNextStatus = (currentStatus) => {
-    const statuses = ['PENDING', 'CONFIRMED', 'COMPLETE', 'CANCELED'];
+    const statuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED'];
     const currentIndex = statuses.indexOf(currentStatus);
     return statuses[(currentIndex + 1) % statuses.length];
   };
